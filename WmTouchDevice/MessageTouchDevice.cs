@@ -49,12 +49,14 @@ namespace WmTouchDevice
                         {
                             device.SetActiveSource(PresentationSource.FromVisual(window));
                             device.Position = position;
+                            device.TouchAction = TouchAction.Down;
                             device.Activate();
                             device.ReportDown();
                         }
                         else if (device.IsActive && input.dwFlags.HasFlag(TOUCHEVENTF.TOUCHEVENTF_UP))
                         {
                             device.Position = position;
+                            device.TouchAction = TouchAction.Up;
                             device.ReportUp();
                             device.Deactivate();
                             _devices.Remove(input.dwID);
@@ -62,6 +64,7 @@ namespace WmTouchDevice
                         else if (device.IsActive && input.dwFlags.HasFlag(TOUCHEVENTF.TOUCHEVENTF_MOVE) && device.Position != position)
                         {
                             device.Position = position;
+                            device.TouchAction = TouchAction.Move;
                             device.ReportMove();
                         }
 
@@ -78,6 +81,8 @@ namespace WmTouchDevice
             : base(id) { }
 
         public Point Position { get; set; }
+
+        public TouchAction TouchAction { get; set; }
 
         public override TouchPointCollection GetIntermediateTouchPoints(IInputElement relativeTo)
         {
@@ -97,7 +102,7 @@ namespace WmTouchDevice
             }
 
             var rect = new Rect(pt, new Size(1.0, 1.0));
-            return new TouchPoint(this, pt, rect, TouchAction.Move);
+            return new TouchPoint(this, pt, rect, TouchAction);
         }
 
         protected override void OnCapture(IInputElement element, CaptureMode captureMode)
