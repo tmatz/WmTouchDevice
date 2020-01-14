@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -16,15 +15,7 @@ namespace WmTouchDevice
             get { return _devices.Count != 0 ? DateTime.Now : _lastTouch; }
         }
 
-        private readonly static FieldInfo _actualLeft;
-        private readonly static FieldInfo _actualTop;
         private readonly static Dictionary<int, MessageTouchDevice> _devices = new Dictionary<int, MessageTouchDevice>();
-
-        static MessageTouchDevice()
-        {
-            _actualLeft = typeof(Window).GetField("_actualLeft", BindingFlags.Instance | BindingFlags.NonPublic);
-            _actualTop = typeof(Window).GetField("_actualTop", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
 
         public static void RegisterTouchWindow(IntPtr hWnd)
         {
@@ -45,7 +36,7 @@ namespace WmTouchDevice
                     {
                         var input = inputs[i];
                         var position = GraphicsHelper.DivideByDpi(new Point(input.x * 0.01, input.y * 0.01));
-                        position.Offset(-(double)_actualLeft.GetValue(window), -(double)_actualTop.GetValue(window));
+                        position = window.PointFromScreen(position);
 
                         MessageTouchDevice device;
                         if (!_devices.TryGetValue(input.dwID, out device))
